@@ -1,12 +1,5 @@
 #include "mysh.h"
 
-/*
-CITS2002 Project 2 2015
-Name(s):             student-name1 (, student-name2)
-Student number(s):   student-number-1 (, student-number-2)
-Date:                date-of-submission
-*/
-
 int main(int argc, char *argv[])
 {
 	//  REMEMBER THE PROGRAM'S NAME (TO REPORT ANY LATER ERROR MESSAGES)
