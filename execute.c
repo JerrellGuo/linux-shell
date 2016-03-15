@@ -10,52 +10,46 @@
 
 #define MAXLENTH 256
 
-/*
-CITS2002 Project 2 2015
-Name(s):		student-name1 (, student-name2)
-Student number(s):	student-number-1 (, student-number-2)
-Date:		date-of-submission
-*/
 
-//ÊµÏÖcd ÃüÁî
+//å®ç°cd å‘½ä»¤
 int changeDirectory(char* args[]){
 	int find = 0;
-	//Èç¹ûÖ»ÊäÈëcd£¬ÄÇÃ´cdµ½HOME 
+	//å¦‚æœåªè¾“å…¥cdï¼Œé‚£ä¹ˆcdåˆ°HOME 
 	if (args[1] == NULL) {
 		check_allocation(HOME);
 		chdir(HOME);
 		return EXIT_SUCCESS;
 	}
 	else{ 
-		//Èç¹ûcdµÄ²ÎÊı²»°üº¬/
+		//å¦‚æœcdçš„å‚æ•°ä¸åŒ…å«/
 		check_allocation(CDPATH);
 		if(!strchr(args[1], '/')){
 			char *d=":";
 			char *p;
-			//·Ö¸îCDPTAH
+			//åˆ†å‰²CDPTAH
 			char *tempCDPATH = strdup(CDPATH);
 			p=strtok(tempCDPATH,d);
-			//ÒÀ´Î³¢ÊÔcdµ½CDPATHÁĞ±íµÄÃ¿Ò»Ïî
+			//ä¾æ¬¡å°è¯•cdåˆ°CDPATHåˆ—è¡¨çš„æ¯ä¸€é¡¹
 			while(p)
 			{
 				char path[100] = "";
 				strcat(path, p);
 				strcat(path, "/");
-				strcat(path, args[1]);  //½«CDPTAHºÍµ±Ç°ÊäÈëµÄCDµÄ²ÎÊı×éºÏ³ÉÄ¿Â¼temp
-				if(chdir(path) == 0) { //½øÈëµ½temp³É¹¦Ìø³öÑ­»·
+				strcat(path, args[1]);  //å°†CDPTAHå’Œå½“å‰è¾“å…¥çš„CDçš„å‚æ•°ç»„åˆæˆç›®å½•temp
+				if(chdir(path) == 0) { //è¿›å…¥åˆ°tempæˆåŠŸè·³å‡ºå¾ªç¯
 					find = 1; 
 					break;
 				} 
 				p = strtok(NULL,d);
 			}
-			if(!find)//Èç¹ûÃ»ÕÒµ½¿ÉÒÔ½øÈëµÄÄ¿Â¼
+			if(!find)//å¦‚æœæ²¡æ‰¾åˆ°å¯ä»¥è¿›å…¥çš„ç›®å½•
 			{
 				printf(" %s: no such directory\n", args[1]);
 				return EXIT_FAILURE;
 			}
 			free(tempCDPATH);
 		}
-		//Èç¹ûÄ¿Â¼°üº¬/,ÔòÖ±½Ó½øÈë
+		//å¦‚æœç›®å½•åŒ…å«/,åˆ™ç›´æ¥è¿›å…¥
 		else if (chdir(args[1]) == -1) {
 			printf(" %s: no such directory\n", args[1]);
 			return EXIT_FAILURE;
@@ -64,20 +58,20 @@ int changeDirectory(char* args[]){
 	return EXIT_SUCCESS;
 }
 
-//Ö´ĞĞshell½Å±¾
+//æ‰§è¡Œshellè„šæœ¬
 int executeShellScript(char* filepath){
 	int exitstatus = EXIT_SUCCESS;
 	int status;
 	int pid;
-	if (access(filepath, R_OK) == 0){//Èç¹û´æÔÚfilepathÇÒ¿É¶Á
-		pid = fork(); //´´½¨×Ó½ø³Ì
+	if (access(filepath, R_OK) == 0){//å¦‚æœå­˜åœ¨filepathä¸”å¯è¯»
+		pid = fork(); //åˆ›å»ºå­è¿›ç¨‹
 		if(pid == -1){
 			perror("Child process could not be created");
 			exitstatus = EXIT_FAILURE;
 		}
-		else if(pid == 0){ //×Ó½ø³Ì
+		else if(pid == 0){ //å­è¿›ç¨‹
 			interactive = false;
-			FILE *pf =  fopen(filepath, "r");//´ò¿ªÎÄ¼ş
+			FILE *pf =  fopen(filepath, "r");//æ‰“å¼€æ–‡ä»¶
 			while(!feof(pf)) {
 				CMDTREE	*t = parse_cmdtree(pf);
 				if(t != NULL) {
@@ -85,7 +79,7 @@ int executeShellScript(char* filepath){
 					free_cmdtree(t);
 				}
 			}
-			fclose(pf); //¹Ø±ÕÎÄ¼ş
+			fclose(pf); //å…³é—­æ–‡ä»¶
 			exit(exitstatus);
 		}
 		else{
@@ -98,28 +92,28 @@ int executeShellScript(char* filepath){
 	return exitstatus;
 }
 
-//Ö´ĞĞÍâ²¿ÃüÁî
+//æ‰§è¡Œå¤–éƒ¨å‘½ä»¤
 int executeOutterComand(CMDTREE *t){
 	int exitstatus = EXIT_FAILURE;
-	if(strchr(t->argv[0], '/') != NULL){//Èç¹ûcommandµÄ²ÎÊı°üº¬/
+	if(strchr(t->argv[0], '/') != NULL){//å¦‚æœcommandçš„å‚æ•°åŒ…å«/
 		execv(t->argv[0], t->argv); 
 		exitstatus = executeShellScript(t->argv[0]);
 	}
-	else { //Èç¹ûcommandµÄ²ÎÊı²»°üº¬/
+	else { //å¦‚æœcommandçš„å‚æ•°ä¸åŒ…å«/
 		char *d=":";
 		char *p;
-		//·Ö¸îPTAH
+		//åˆ†å‰²PTAH
 		check_allocation(PATH);
 		char *tempPATH = strdup(PATH);
 		strcpy(tempPATH, PATH);
 		p=strtok(tempPATH,d);
-		//ÒÀ´Î³¢ÊÔËÑË÷PATHÁĞ±íµÄÃ¿Ò»¸öÄ¿Â¼
+		//ä¾æ¬¡å°è¯•æœç´¢PATHåˆ—è¡¨çš„æ¯ä¸€ä¸ªç›®å½•
 		while(p)
 		{
 			char temp[MAXLENTH] = "";
 			strcat(temp, p);
 			strcat(temp, "/");
-			strcat(temp, t->argv[0]);  //½«PATHºÍµ±Ç°ÊäÈëµÄCDµÄ²ÎÊı×éºÏ³ÉÄ¿Â¼temp
+			strcat(temp, t->argv[0]);  //å°†PATHå’Œå½“å‰è¾“å…¥çš„CDçš„å‚æ•°ç»„åˆæˆç›®å½•temp
 			execv(temp, t->argv);
 			exitstatus = executeShellScript(temp); 
 			if(exitstatus == EXIT_SUCCESS) break;;
@@ -130,7 +124,7 @@ int executeOutterComand(CMDTREE *t){
 	return exitstatus;
 }
 
-//¼ì²éÊÇ·ñÊÇÄÚ²¿ÃüÁî
+//æ£€æŸ¥æ˜¯å¦æ˜¯å†…éƒ¨å‘½ä»¤
 bool checkBuiltin(CMDTREE *t){
 	if(strcmp(t->argv[0],"exit") == 0 || strcmp(t->argv[0],"cd") == 0 || strcmp(t->argv[0],"time") == 0
 		|| strcmp(t->argv[0],"set") == 0)
@@ -138,7 +132,7 @@ bool checkBuiltin(CMDTREE *t){
 	return false;
 }
 
-//ÉèÖÃ»·¾³±äÁ¿
+//è®¾ç½®ç¯å¢ƒå˜é‡
 int setInternalVar(char * args[]){
 	int exitstatus = EXIT_SUCCESS;
 	if(args[1] == NULL) return EXIT_FAILURE;
@@ -163,44 +157,44 @@ int setInternalVar(char * args[]){
 	return exitstatus;
 }
 
-//Ö´ĞĞÄÚ²¿ÃüÁî
+//æ‰§è¡Œå†…éƒ¨å‘½ä»¤
 int executeBuitlinComand(CMDTREE *t){
 	int exitstatus = EXIT_SUCCESS;
-	if (strcmp(t->argv[0],"exit") == 0) {//´¦ÀíexitÃüÁî
+	if (strcmp(t->argv[0],"exit") == 0) {//å¤„ç†exitå‘½ä»¤
 		if(t->argc > 1)
 			exit(atoi(t->argv[1]));
 		else exit(exitstatus);
 	}
-	else if(strcmp(t->argv[0], "cd") == 0){//´¦ÀícdÃüÁî
+	else if(strcmp(t->argv[0], "cd") == 0){//å¤„ç†cdå‘½ä»¤
 		exitstatus = changeDirectory(t->argv);
 	}
 	else if(strcmp(t->argv[0], "time") == 0){
-		if(t->argc > 1){ //Èç¹ûtimeºóÃæ»¹ÓĞÖ¸Áî
-			struct timeval tv_begin, tv_end; //¶¨ÒåÊ±¼ä½á¹¹ÌåÀàĞÍ
-			char** temp = t->argv; //±£´æargvÖ¸Õë
+		if(t->argc > 1){ //å¦‚æœtimeåé¢è¿˜æœ‰æŒ‡ä»¤
+			struct timeval tv_begin, tv_end; //å®šä¹‰æ—¶é—´ç»“æ„ä½“ç±»å‹
+			char** temp = t->argv; //ä¿å­˜argvæŒ‡é’ˆ
 
-			//ÓÉÓÚ´¦ÀíÁËtimeÃüÁî£¬²ÎÊı×ÜÊı¼õ1,argvÖ¸Õë¼Ó1
+			//ç”±äºå¤„ç†äº†timeå‘½ä»¤ï¼Œå‚æ•°æ€»æ•°å‡1,argvæŒ‡é’ˆåŠ 1
 			t->argc--; 
 			t->argv++;  
 
-			gettimeofday(&tv_begin, NULL);//»ñÈ¡¿ªÊ¼Ê±¼ä
-			exitstatus = execute_cmdtree(t); //µİ¹é´¦ÀíÃüÁî
-			gettimeofday(&tv_end, NULL);//»ñÈ¡½áÊøÊ±¼ä
-			double timeUsed =  1000000*(tv_end.tv_sec - tv_begin.tv_sec) + tv_end.tv_usec - tv_begin.tv_usec; //Ê±¼ä²î£¬µ¥Î»Î¢Ãë
-			timeUsed /= 1000; //Ê±¼ä²î£¬µ¥Î»ºÁÃë
+			gettimeofday(&tv_begin, NULL);//è·å–å¼€å§‹æ—¶é—´
+			exitstatus = execute_cmdtree(t); //é€’å½’å¤„ç†å‘½ä»¤
+			gettimeofday(&tv_end, NULL);//è·å–ç»“æŸæ—¶é—´
+			double timeUsed =  1000000*(tv_end.tv_sec - tv_begin.tv_sec) + tv_end.tv_usec - tv_begin.tv_usec; //æ—¶é—´å·®ï¼Œå•ä½å¾®ç§’
+			timeUsed /= 1000; //æ—¶é—´å·®ï¼Œå•ä½æ¯«ç§’
 			printf("%.2fmsec\n", timeUsed);
 
-			t->argv = temp; //»Ö¸´argvÖ¸Õë
+			t->argv = temp; //æ¢å¤argvæŒ‡é’ˆ
 		}
 		else printf("0msec\n");
 	}
-	else if(strcmp(t->argv[0], "set") == 0){//ÉèÖÃ»·¾³±äÁ¿
+	else if(strcmp(t->argv[0], "set") == 0){//è®¾ç½®ç¯å¢ƒå˜é‡
 		exitstatus = setInternalVar(t->argv);
 	}
 	return exitstatus;
 }
 
-//ÖØ¶¨Ïò
+//é‡å®šå‘
 void executeRedirection(CMDTREE *t){
 	int fileDescriptor; // between 0 and 19, describing the output or input file
 
@@ -235,46 +229,46 @@ void executeRedirection(CMDTREE *t){
 	}
 }
 
-//»Ö¸´ÖØ¶¨Ïò
+//æ¢å¤é‡å®šå‘
 void undoRedirection(int fd1, int fd2){
 	dup2(fd1, STDIN_FILENO);
 	dup2(fd2, STDOUT_FILENO); 
 }
 
-//Ö´ĞĞ¹ÜµÀÃüÁî
+//æ‰§è¡Œç®¡é“å‘½ä»¤
 int pipeHandle(CMDTREE* t){
 	int filedes[2];
 	int pidA, pidB;
 	int statusA, statusB;
 	int exitstatus = EXIT_SUCCESS;
-	//´´½¨¹ÜµÀºÍ×Ó½ø³ÌA,B£¬²¢½«½ø³ÌAµÄÊä³öÖØ¶¨Ïòµ½¹ÜµÀµÄĞ´¶Ë£¬½«½ø³ÌBµÄÊäÈëÖØ¶¨Ïòµ½¹ÜµÀµÄ¶Á¶Ë
-	if ( pipe(filedes) == 0 ){  //Èç¹û½¨Á¢¹ÜµÀ³É¹¦
-		pidA = fork(); //½¨Á¢×Ó½ø³ÌA
+	//åˆ›å»ºç®¡é“å’Œå­è¿›ç¨‹A,Bï¼Œå¹¶å°†è¿›ç¨‹Açš„è¾“å‡ºé‡å®šå‘åˆ°ç®¡é“çš„å†™ç«¯ï¼Œå°†è¿›ç¨‹Bçš„è¾“å…¥é‡å®šå‘åˆ°ç®¡é“çš„è¯»ç«¯
+	if ( pipe(filedes) == 0 ){  //å¦‚æœå»ºç«‹ç®¡é“æˆåŠŸ
+		pidA = fork(); //å»ºç«‹å­è¿›ç¨‹A
 		if(pidA == -1){
 			perror("Child process could not be created");
 			exitstatus = EXIT_FAILURE;
 		}
-		else if (pidA == 0 ) {  //×Ó½ø³ÌA
-			dup2( filedes[1], STDOUT_FILENO );  //°ÑstdoutÖØ¶¨Ïòµ½¹ÜµÀfiledes[1]
-			close( filedes[0] );   //¹Øµô¹ÜµÀµÄÊäÈë¶Ë
-			close( filedes[1] );   //¹Øµô¹ÜµÀµÄÊä³ö¶Ë
-			exitstatus = execute_cmdtree(t->left);//µİ¹é´¦Àít->left
+		else if (pidA == 0 ) {  //å­è¿›ç¨‹A
+			dup2( filedes[1], STDOUT_FILENO );  //æŠŠstdouté‡å®šå‘åˆ°ç®¡é“filedes[1]
+			close( filedes[0] );   //å…³æ‰ç®¡é“çš„è¾“å…¥ç«¯
+			close( filedes[1] );   //å…³æ‰ç®¡é“çš„è¾“å‡ºç«¯
+			exitstatus = execute_cmdtree(t->left);//é€’å½’å¤„ç†t->left
 			exit(exitstatus);
 		}
 		else{
-			pidB = fork(); //½¨Á¢×Ó½ø³ÌB
+			pidB = fork(); //å»ºç«‹å­è¿›ç¨‹B
 			if(pidB == -1){
 				perror("Child process could not be created");
 				exitstatus = EXIT_FAILURE;
 			}
-			else if(pidB == 0) { //×Ó½ø³ÌB
-				dup2( filedes[0], STDIN_FILENO); //Í¬ÉÏ½ø³ÌA
+			else if(pidB == 0) { //å­è¿›ç¨‹B
+				dup2( filedes[0], STDIN_FILENO); //åŒä¸Šè¿›ç¨‹A
 				close( filedes[1] );   
 				close( filedes[0] );   
 				exitstatus = execute_cmdtree(t->right);
 				exit(exitstatus);
 			}
-			else{ //¸¸½ø³Ì
+			else{ //çˆ¶è¿›ç¨‹
 				close(filedes[1]);
 				close(filedes[0]);
 				waitpid(pidA, &statusA, 0);
@@ -308,14 +302,14 @@ int execute_cmdtree(CMDTREE *t)
 		exitstatus	= EXIT_SUCCESS;
 		switch (t->type) {
 		case N_COMMAND :
-			executeRedirection(t);//ÖØ¶¨Ïò
-			if(checkBuiltin(t) == true){ // Èç¹ûÊÇÄÚ½¨ÃüÁî
+			executeRedirection(t);//é‡å®šå‘
+			if(checkBuiltin(t) == true){ // å¦‚æœæ˜¯å†…å»ºå‘½ä»¤
 				exitstatus = executeBuitlinComand(t);
 			}
-			else{ //Èç¹ûÊÇÍâ²¿ÃüÁî
-				//´´½¨×Ó½ø³Ì
+			else{ //å¦‚æœæ˜¯å¤–éƒ¨å‘½ä»¤
+				//åˆ›å»ºå­è¿›ç¨‹
 				pid = fork();
-				if(pid == -1){ //Èç¹û´´½¨×Ó½ø³ÌÊ§°Ü
+				if(pid == -1){ //å¦‚æœåˆ›å»ºå­è¿›ç¨‹å¤±è´¥
 					perror("Child process could not be created");
 					exitstatus = EXIT_FAILURE;
 				}
@@ -334,7 +328,7 @@ int execute_cmdtree(CMDTREE *t)
 					exit(EXIT_SUCCESS);
 				}
 			}
-			undoRedirection(fd1,fd2);//»Ö¸´ÖØ¶¨Ïò
+			undoRedirection(fd1,fd2);//æ¢å¤é‡å®šå‘
 			break;
 
 		case N_SUBSHELL :
